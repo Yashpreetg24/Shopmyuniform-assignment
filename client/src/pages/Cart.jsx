@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import client from '../api/client';
 
 export default function Cart() {
@@ -28,7 +29,7 @@ export default function Cart() {
       await client.put(`/cart/${itemId}`, { quantity: newQuantity });
       fetchCart();
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to update quantity');
+      toast.error(error.response?.data?.error || 'Failed to update quantity');
     }
   };
 
@@ -37,7 +38,7 @@ export default function Cart() {
       await client.delete(`/cart/${itemId}`);
       setCartItems(cartItems.filter(i => i.id !== itemId));
     } catch (error) {
-      alert('Failed to remove item');
+      toast.error('Failed to remove item');
     }
   };
 

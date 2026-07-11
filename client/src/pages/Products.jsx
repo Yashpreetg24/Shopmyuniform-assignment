@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import client from '../api/client';
 
 export default function Products() {
@@ -75,7 +76,27 @@ export default function Products() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-10">
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col lg:flex-row gap-10"
+    >
       {/* Sidebar Filters */}
       <div className="w-full lg:w-64 shrink-0 space-y-8">
         <div>
@@ -131,8 +152,19 @@ export default function Products() {
         </div>
         
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map(n => (
+              <div key={n} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col animate-pulse">
+                <div className="relative aspect-[4/5] bg-gray-200"></div>
+                <div className="p-5 flex flex-col flex-grow space-y-3">
+                  <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                  <div className="mt-auto pt-2 flex justify-between items-center">
+                    <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <>
@@ -148,40 +180,46 @@ export default function Products() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+              >
                 {products.map((product, idx) => (
-                  <Link 
-                    key={product.id} 
-                    to={`/products/${product.id}`}
-                    className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col"
-                  >
-                    <div className="relative aspect-[4/5] bg-gray-200 overflow-hidden">
-                      <img 
-                        src={getPlaceholderImage(product.id, idx)} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                      {product.stockQuantity <= 0 && (
-                        <div className="absolute top-4 left-4 bg-gray-900/80 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full">
-                          Sold Out
+                  <motion.div key={product.id} variants={itemVariants}>
+                    <Link 
+                      to={`/products/${product.id}`}
+                      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full"
+                    >
+                      <div className="relative aspect-[4/5] bg-gray-200 overflow-hidden">
+                        <img 
+                          src={getPlaceholderImage(product.id, idx)} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        {product.stockQuantity <= 0 && (
+                          <div className="absolute top-4 left-4 bg-gray-900/80 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full">
+                            Sold Out
+                          </div>
+                        )}
+                        <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                          <span className="block w-full bg-white/90 backdrop-blur text-gray-900 text-center font-bold py-3 rounded-xl shadow-lg">
+                            View Product
+                          </span>
                         </div>
-                      )}
-                      <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                        <span className="block w-full bg-white/90 backdrop-blur text-gray-900 text-center font-bold py-3 rounded-xl shadow-lg">
-                          View Product
-                        </span>
                       </div>
-                    </div>
-                    <div className="p-5 flex flex-col flex-grow">
-                      <p className="text-sm text-gray-500 mb-1">{product.category?.name || 'Category'}</p>
-                      <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1">{product.name}</h3>
-                      <div className="mt-auto flex justify-between items-center">
-                        <p className="text-brand-600 font-bold text-lg">₹{(product.price / 100).toFixed(2)}</p>
+                      <div className="p-5 flex flex-col flex-grow">
+                        <p className="text-sm text-gray-500 mb-1">{product.category?.name || 'Category'}</p>
+                        <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1">{product.name}</h3>
+                        <div className="mt-auto flex justify-between items-center">
+                          <p className="text-brand-600 font-bold text-lg">₹{(product.price / 100).toFixed(2)}</p>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
             
             {totalPages > 1 && (
@@ -216,6 +254,6 @@ export default function Products() {
           </>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

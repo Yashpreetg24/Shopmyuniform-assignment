@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import client from '../api/client';
 
 export default function Wishlist() {
@@ -27,7 +28,7 @@ export default function Wishlist() {
       await client.delete(`/wishlist/${itemId}`);
       setWishlist(wishlist.filter(i => i.id !== itemId));
     } catch (error) {
-      alert('Failed to remove item');
+      toast.error('Failed to remove item');
     }
   };
 

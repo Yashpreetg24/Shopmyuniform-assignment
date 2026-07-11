@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import client from '../api/client';
 
 export default function Checkout() {
@@ -21,12 +22,13 @@ export default function Checkout() {
       setPlacingOrder(true);
       setError(null);
       const res = await client.post('/orders');
+      toast.success('Order placed successfully!');
       navigate(`/orders/${res.data.id}`);
     } catch (err) {
       if (err.response?.data?.details) {
         setError(`Out of stock: ${err.response.data.details.map(d => d.name).join(', ')}`);
       } else {
-        setError(err.response?.data?.error || 'Failed to place order');
+        toast.error(err.response?.data?.error || 'Failed to place order');
       }
     } finally {
       setPlacingOrder(false);

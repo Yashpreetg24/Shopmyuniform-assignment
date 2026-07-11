@@ -1,8 +1,15 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export default function Home() {
   return (
-    <div className="space-y-24 pb-12">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-24 pb-12"
+    >
       {/* Hero Section */}
       <section className="relative h-[600px] flex items-center justify-center rounded-2xl overflow-hidden shadow-2xl">
         <div className="absolute inset-0">
@@ -113,6 +120,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }

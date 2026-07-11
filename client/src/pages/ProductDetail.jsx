@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,9 +27,10 @@ export default function ProductDetail() {
       setIsAddingToCart(true);
       await client.post('/cart', { productId: product.id, quantity: 1 });
       // Add a small delay for animation effect
+      toast.success('Added to cart!');
       setTimeout(() => setIsAddingToCart(false), 500);
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to add to cart');
+      toast.error(error.response?.data?.error || 'Failed to add to cart');
       setIsAddingToCart(false);
     }
   };
@@ -36,19 +39,41 @@ export default function ProductDetail() {
     if (!user) return navigate('/login');
     try {
       await client.post('/wishlist', { productId: product.id });
-      alert('Added to wishlist!');
+      toast.success('Added to wishlist!');
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to add to wishlist');
+      toast.error(error.response?.data?.error || 'Failed to add to wishlist');
     }
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.5 }}
+      className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12"
+    >
+      <div className="md:w-1/2">
+        <div className="aspect-[4/5] bg-gray-200 rounded-3xl animate-pulse"></div>
+      </div>
+      <div className="md:w-1/2 flex flex-col justify-center space-y-6">
+        <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+        <div className="h-10 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+        <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+        <div className="space-y-3 mt-6">
+          <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  if (!product) return (
+    <div className="text-center py-20">
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">Product not found</h2>
+      <Link to="/products" className="text-brand-600 font-medium hover:underline">Return to collection</Link>
     </div>
   );
-  
-  if (!product) return <div className="text-center py-20 text-red-500 font-medium">Product not found.</div>;
 
   const isOutOfStock = product.stockQuantity <= 0;
   // Parse sizes if it's a comma separated string, else just use the string or default array
@@ -66,7 +91,12 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.5 }}
+      className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden"
+    >
       <div className="flex flex-col lg:flex-row">
         {/* Left: Image Gallery */}
         <div className="w-full lg:w-1/2 relative bg-gray-100">
@@ -169,6 +199,6 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

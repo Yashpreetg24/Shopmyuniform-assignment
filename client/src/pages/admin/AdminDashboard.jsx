@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import client from '../../api/client';
 
 export default function AdminDashboard() {
@@ -37,8 +38,9 @@ export default function AdminDashboard() {
     try {
       await client.put(`/admin/orders/${orderId}/status`, { status });
       fetchData(); // refresh orders
+      toast.success('Order status updated');
     } catch (error) {
-      alert('Failed to update status');
+      toast.error('Failed to update status');
     }
   };
 
@@ -49,8 +51,9 @@ export default function AdminDashboard() {
       await client.post('/admin/categories', { name: categoryName, slug: categorySlug });
       setCategoryName(''); setCategorySlug('');
       fetchData();
+      toast.success('Category created');
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to create category');
+      toast.error(error.response?.data?.error || 'Failed to create category');
     }
   };
 
@@ -59,8 +62,9 @@ export default function AdminDashboard() {
     try {
       await client.delete(`/admin/categories/${id}`);
       fetchData();
+      toast.success('Category deleted');
     } catch (error) {
-      alert('Failed to delete category');
+      toast.error('Failed to delete category');
     }
   };
 
@@ -83,8 +87,9 @@ export default function AdminDashboard() {
       setProductForm({ name: '', description: '', price: '', stockQuantity: '', size: '', categoryId: '' });
       setEditingProductId(null);
       fetchData();
+      toast.success('Product saved');
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to save product');
+      toast.error(error.response?.data?.error || 'Failed to save product');
     }
   };
 
@@ -105,8 +110,9 @@ export default function AdminDashboard() {
     try {
       await client.delete(`/admin/products/${id}`);
       fetchData();
+      toast.success('Product deleted');
     } catch (error) {
-      alert('Failed to delete product');
+      toast.error('Failed to delete product');
     }
   };
 
