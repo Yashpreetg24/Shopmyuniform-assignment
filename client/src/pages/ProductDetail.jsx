@@ -7,6 +7,8 @@ export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -20,10 +22,13 @@ export default function ProductDetail() {
   const addToCart = async () => {
     if (!user) return navigate('/login');
     try {
+      setIsAddingToCart(true);
       await client.post('/cart', { productId: product.id, quantity: 1 });
-      alert('Added to cart!');
+      // Add a small delay for animation effect
+      setTimeout(() => setIsAddingToCart(false), 500);
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to add to cart');
+      setIsAddingToCart(false);
     }
   };
 
@@ -37,57 +42,131 @@ export default function ProductDetail() {
     }
   };
 
-  if (loading) return <div className="text-center py-10">Loading...</div>;
-  if (!product) return <div className="text-center py-10 text-red-500">Product not found.</div>;
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+    </div>
+  );
+  
+  if (!product) return <div className="text-center py-20 text-red-500 font-medium">Product not found.</div>;
 
   const isOutOfStock = product.stockQuantity <= 0;
+  // Parse sizes if it's a comma separated string, else just use the string or default array
+  const sizes = product.size ? product.size.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'];
+
+  // Helper for placeholder images
+  const getPlaceholderImage = (id) => {
+    const seed = (id.charCodeAt(0)) % 10;
+    return `https://images.unsplash.com/photo-${[
+      '1515347619362-f6745e12e75e', '1521572163474-6864f9cf17ab', '1532453288672-3a27e9be9efd',
+      '1584982751601-97dcc096659c', '1550639525-c97d455bfcce', '1487222477894-8943e31ef7b2',
+      '1580651315530-69c8e0026377', '1577219491135-ce391730fb2c', '1523381210434-271e8be1f52b',
+      '1515347619362-f6745e12e75e'
+    ][seed]}?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80`;
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row gap-8">
-      <div className="w-full md:w-1/2 h-64 md:h-96 bg-gray-200 flex items-center justify-center rounded">
-        <span className="text-gray-400">No Image</span>
-      </div>
-      
-      <div className="w-full md:w-1/2 space-y-4">
-        <h1 className="text-3xl font-bold">{product.name}</h1>
-        <p className="text-xl text-blue-600 font-semibold">₹{(product.price / 100).toFixed(2)}</p>
-        
-        <p className="text-gray-600">{product.description}</p>
-        
-        {product.size && (
-          <div>
-            <span className="font-semibold text-gray-700">Size:</span> {product.size}
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="flex flex-col lg:flex-row">
+        {/* Left: Image Gallery */}
+        <div className="w-full lg:w-1/2 relative bg-gray-100">
+          <div className="aspect-square w-full">
+            <img 
+              src={getPlaceholderImage(product.id)} 
+              alt={product.name}
+              className="w-full h-full object-cover" 
+            />
           </div>
-        )}
-        
-        <div>
-          <span className="font-semibold text-gray-700">Category:</span> {product.category?.name}
-        </div>
-        
-        <div>
-          <span className="font-semibold text-gray-700">Availability:</span>{' '}
-          {isOutOfStock ? (
-            <span className="text-red-500 font-medium">Out of Stock</span>
-          ) : (
-            <span className="text-green-600 font-medium">{product.stockQuantity} in stock</span>
+          {isOutOfStock && (
+            <div className="absolute top-6 left-6 bg-gray-900/80 backdrop-blur text-white font-bold px-4 py-2 rounded-full shadow-lg">
+              Out of Stock
+            </div>
           )}
         </div>
-
-        <div className="pt-6 flex gap-4">
-          <button 
-            onClick={addToCart}
-            disabled={isOutOfStock}
-            className="flex-1 bg-blue-600 text-white py-3 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-          </button>
+        
+        {/* Right: Product Details */}
+        <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-semibold text-brand-600 uppercase tracking-wider">{product.category?.name || 'Category'}</span>
+            <span className={`text-sm font-medium ${isOutOfStock ? 'text-red-500' : 'text-green-600'}`}>
+              {isOutOfStock ? 'Currently Unavailable' : `${product.stockQuantity} in stock`}
+            </span>
+          </div>
           
-          <button 
-            onClick={addToWishlist}
-            className="flex-1 bg-gray-100 text-gray-800 border py-3 rounded font-medium hover:bg-gray-200"
-          >
-            Add to Wishlist
-          </button>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4 leading-tight">
+            {product.name}
+          </h1>
+          
+          <p className="text-3xl font-bold text-gray-900 mb-8">
+            ₹{(product.price / 100).toFixed(2)}
+          </p>
+          
+          <div className="prose prose-sm text-gray-500 mb-10 max-w-none">
+            <p className="text-base leading-relaxed">
+              {product.description || 'Experience premium quality and comfort with this carefully crafted piece. Designed for the modern professional who demands both style and durability in their daily wear.'}
+            </p>
+          </div>
+          
+          <div className="mb-10">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-gray-900">Select Size</h3>
+              <button className="text-sm text-brand-600 hover:underline">Size Guide</button>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {sizes.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSize(s)}
+                  className={`w-14 h-14 rounded-xl flex items-center justify-center font-semibold text-sm transition-all
+                    ${selectedSize === s 
+                      ? 'bg-gray-900 text-white shadow-lg scale-105 border-transparent' 
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-900 hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-auto pt-8 border-t flex gap-4">
+            <button 
+              onClick={addToCart}
+              disabled={isOutOfStock}
+              className={`flex-1 relative overflow-hidden py-4 rounded-xl font-bold text-lg transition-all duration-300
+                ${isOutOfStock 
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                  : isAddingToCart
+                    ? 'bg-green-500 text-white scale-95'
+                    : 'bg-brand-600 text-white hover:bg-brand-700 hover:shadow-[0_0_20px_rgba(79,70,229,0.4)]'
+                }
+              `}
+            >
+              {isOutOfStock ? 'Out of Stock' : (isAddingToCart ? 'Added!' : 'Add to Cart')}
+            </button>
+            
+            <button 
+              onClick={addToWishlist}
+              className="w-16 h-16 flex items-center justify-center bg-gray-50 text-gray-600 border border-gray-200 rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
+              title="Add to Wishlist"
+            >
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+              <span>Free Shipping</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              <span>30-Day Returns</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
