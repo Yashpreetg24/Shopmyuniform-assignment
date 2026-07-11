@@ -81,4 +81,39 @@ router.delete('/products/:id', async (req, res) => {
   }
 });
 
+// ORDERS
+router.get('/orders', async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { email: true } },
+        items: true
+      }
+    });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
+router.put('/orders/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const validStatuses = ['PLACED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+    
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const order = await prisma.order.update({
+      where: { id: req.params.id },
+      data: { status }
+    });
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
 module.exports = router;
