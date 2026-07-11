@@ -9,7 +9,7 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,8 +17,7 @@ export default function Signup() {
     try {
       setLoading(true);
       setError('');
-      const res = await client.post('/auth/register', { name, email, password });
-      login(res.data.token, res.data.user);
+      await signup(name, email, password);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Signup failed');
