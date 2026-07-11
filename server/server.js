@@ -31,9 +31,20 @@ app.use('/api/orders', ordersRoutes);
 const wishlistRoutes = require('./routes/wishlist');
 app.use('/api/wishlist', wishlistRoutes);
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+const path = require('path');
+
+// Serve static frontend in production
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.join(__dirname, '../client/dist');
+  app.use(express.static(clientDist));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(clientDist, 'index.html'));
+  });
+} else {
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

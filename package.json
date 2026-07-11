@@ -1,0 +1,13 @@
+{
+  "name": "shopmyuniform-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo setup for ShopMyUniform assignment",
+  "scripts": {
+    "install-all": "npm install --prefix server && npm install --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "dev": "npm run dev:server & npm run dev:client"
+  }
+}
