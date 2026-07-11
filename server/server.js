@@ -25,6 +25,9 @@ app.use('/api/admin', adminRoutes);
 const cartRoutes = require('./routes/cart');
 app.use('/api/cart', cartRoutes);
 
+const ordersRoutes = require('./routes/orders');
+app.use('/api/orders', ordersRoutes);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
