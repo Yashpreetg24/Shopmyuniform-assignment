@@ -75,7 +75,6 @@ export default function Products() {
     ][seed]}?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80`;
   };
 
-  return (
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
