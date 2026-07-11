@@ -19,6 +19,9 @@ app.use('/api/categories', categoriesRoutes);
 const productsRoutes = require('./routes/products');
 app.use('/api/products', productsRoutes);
 
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
