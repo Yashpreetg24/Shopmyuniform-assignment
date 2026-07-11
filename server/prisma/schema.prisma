@@ -17,6 +17,9 @@ model User {
   passwordHash String
   name         String?
   role         String   @default("USER")
+  cartItems    CartItem[]
+  orders       Order[]
+  wishlists    Wishlist[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -38,6 +41,51 @@ model Product {
   size          String?
   categoryId    String
   category      Category @relation(fields: [categoryId], references: [id])
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  wishlists     Wishlist[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  
+  @@unique([userId, productId])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  status      String      @default("PLACED")
+  totalAmount Int
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model OrderItem {
+  id              String  @id @default(uuid())
+  orderId         String
+  order           Order   @relation(fields: [orderId], references: [id])
+  productId       String
+  product         Product @relation(fields: [productId], references: [id])
+  quantity        Int     @default(1)
+  priceAtPurchase Int
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  
+  @@unique([userId, productId])
 }
