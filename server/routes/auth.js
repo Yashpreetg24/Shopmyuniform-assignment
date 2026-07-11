@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -71,6 +72,20 @@ router.post('/login', async (req, res) => {
     const { passwordHash: _, ...safeUser } = user;
     res.json({ user: safeUser, token });
 
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const { passwordHash: _, ...safeUser } = user;
+    res.json(safeUser);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
