@@ -28,6 +28,9 @@ app.use('/api/cart', cartRoutes);
 const ordersRoutes = require('./routes/orders');
 app.use('/api/orders', ordersRoutes);
 
+const wishlistRoutes = require('./routes/wishlist');
+app.use('/api/wishlist', wishlistRoutes);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
