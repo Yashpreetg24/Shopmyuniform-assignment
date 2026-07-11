@@ -5,6 +5,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [orders, setOrders] = useState([]);
   
   // Forms state
   const [categoryName, setCategoryName] = useState('');
@@ -19,14 +20,25 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [prodRes, catRes] = await Promise.all([
+      const [prodRes, catRes, orderRes] = await Promise.all([
         client.get('/products?limit=100'),
-        client.get('/categories')
+        client.get('/categories'),
+        client.get('/admin/orders')
       ]);
       setProducts(prodRes.data.items);
       setCategories(catRes.data);
+      setOrders(orderRes.data);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId, status) => {
+    try {
+      await client.put(`/admin/orders/${orderId}/status`, { status });
+      fetchData(); // refresh orders
+    } catch (error) {
+      alert('Failed to update status');
     }
   };
 
@@ -115,7 +127,55 @@ export default function AdminDashboard() {
         >
           Categories
         </button>
+        <button 
+          className={`pb-2 px-1 font-medium ${activeTab === 'orders' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('orders')}
+        >
+          Orders
+        </button>
       </div>
+
+      {/* Orders Tab */}
+      {activeTab === 'orders' && (
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-xl font-bold mb-4">All Orders</h2>
+            <div className="overflow-x-auto border rounded">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {orders.map(o => (
+                    <tr key={o.id}>
+                      <td className="px-4 py-3 text-sm">{o.id.slice(0, 8)}...</td>
+                      <td className="px-4 py-3 text-sm">{o.user?.email}</td>
+                      <td className="px-4 py-3 text-sm">₹{(o.totalAmount / 100).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <select 
+                          value={o.status}
+                          onChange={(e) => handleUpdateOrderStatus(o.id, e.target.value)}
+                          className="border rounded px-2 py-1 text-sm bg-white"
+                        >
+                          <option value="PLACED">PLACED</option>
+                          <option value="PROCESSING">PROCESSING</option>
+                          <option value="SHIPPED">SHIPPED</option>
+                          <option value="DELIVERED">DELIVERED</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeTab === 'categories' && (
         <div className="space-y-8">
