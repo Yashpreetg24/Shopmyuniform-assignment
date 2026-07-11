@@ -13,6 +13,12 @@ app.use(morgan('dev'));
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
+const categoriesRoutes = require('./routes/categories');
+app.use('/api/categories', categoriesRoutes);
+
+const productsRoutes = require('./routes/products');
+app.use('/api/products', productsRoutes);
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
