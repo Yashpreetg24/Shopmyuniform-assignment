@@ -90,4 +90,42 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get('/', async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({
+      where: { userId: req.user.id },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: { product: true }
+        }
+      }
+    });
+
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    
+    if (order.userId !== req.user.id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
